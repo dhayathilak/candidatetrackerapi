@@ -1,61 +1,93 @@
 from flask import Flask,request
 from flask_cors import CORS
-import psycopg2
+from models import Candidate,CourtSearch,Recruiter,db,app
 
+lst=[]
 
-app = Flask(__name__)
-host_name='127.0.0.1'
-portid=5432
-database= 'Candidatetracker'
-username='postgres'
-pwd=1234
-
-# setting up a connection cursor
-conn  = psycopg2.connect(host=host_name,dbname=database,user=username,password=pwd)
-try:
-    cur = conn.cursor()
-
-except Exception as error:
-    print(error)
-
-
-@app.route('/recruiters',methods=['GET'])
+@app.route('/recruiters')
 def get_recruiters():
-    cur.execute("SELECT * FROM RECRUITERS")
-    records = cur.fetchall()
-    return records
+    recruiters_info = Recruiter.query.all()
+    results = [
+            {
+                "id": recruiter.id,
+                "name": recruiter.name,
+                "email_id": recruiter.email_id
+            } for recruiter in recruiters_info]
+    return results
 
+@app.route('/recruiters/<id>')
+def get_recruiter(id):
+    recruiters_info = Recruiter.query.filter_by(id=id)
+    results = [
+            {
+                "id": recruiter.id,
+                "name": recruiter.name,
+                "email_id": recruiter.email_id
+            } for recruiter in recruiters_info]
+    return results
 
-@app.route('/recruiters/<id>',methods=['GET'])
-def get_recruiter():
-    cur.execute("SELECT * FROM RECRUITERS RECRUITER WHERE RECRUITER.ID='%s"%(id))
-    records = cur.fetchall()
-    return records
-
-
-@app.route('/candidates',methods=['GET'])    
+@app.route('/candidates')
 def get_candidates():
-    cur.execute("select c.id,c.name,c.adjunction,c.date,c.email_id,l.zipcode,d.drivers_licsense,d.social_security,r.* from candidates c inner join locations l on c.id= l.id inner join documents d on c.documentid= d.id inner join report_information r on c.id = r.id")
-    records = cur.fetchall()
-    return records
+    candidates = Candidate.query.all()
+    
+    for candidate in candidates:
+        for document in candidate.document:
+            lst.append({"social_security":document.social_security})
+            lst.append({"drivers_licsense":document.drivers_licsense})
+        for location in candidate.location:
+            lst.append({'zipcode':location.zipcode})
+        for report in candidate.reportinformation:
+            lst.append({'status':report.status})
+            lst.append({'adjunction':report.adjunction})
+            lst.append({'package':report.package})
+            lst.append({'completed_date':report.completed_date})
+            lst.append({'turn_around_time':report.turn_around_time})
+        
+        lst.append({'candidate_name':candidate.name})
 
-@app.route('/candidates/<id>',methods=['GET'])    
+    return lst
+
+
+@app.route('/candidates/<id>')
 def get_candidate(id):
-    cur.execute("select c.id,c.name,c.adjunction,c.date,c.email_id,l.zipcode,d.drivers_licsense,d.social_security,r.* from candidates c inner join locations l on c.id= l.id inner join documents d on c.documentid= d.id inner join report_information r on c.id = r.id where c.id='%s'"%(id))
-    records = cur.fetchall()
-    return records
+    candidates = Candidate.query.filter_by(id=id)
+    
+    for candidate in candidates:
+        for document in candidate.document:
+            lst.append({"social_security":document.social_security})
+            lst.append({"drivers_licsense":document.drivers_licsense})
+        for location in candidate.location:
+            lst.append({'zipcode':location.zipcode})
+        for report in candidate.reportinformation:
+            lst.append({'status':report.status})
+            lst.append({'adjunction':report.adjunction})
+            lst.append({'package':report.package})
+            lst.append({'completed_date':report.completed_date})
+            lst.append({'turn_around_time':report.turn_around_time})
+        
+        lst.append({'candidate_name':candidate.name})
 
-@app.route('/candidates/<id>',methods=['PUT','GET'])
-def update_adverse_action(id):
-    adverse_action = request.form.get('adverse_action')
-    print(adverse_action)
-    cur.execute("update candidates set adjunction =CASE adjunction  when 'pre-adverse' then 'adverse' when 'engage' then 'engage' else '-' end  where candidates.id='%s'"%(id))
-    records = cur.fetchall()
-    return records
+    return lst
+
+@app.route('/courtsearch/<id>')
+def get_courtsearch(id):
+    court_search = CourtSearch.query.filter_by(id=id)
+    results = [
+            {
+                "id": c.id,
+                "name": c.name,
+                "status": c.status,
+                "date": c.date
+            } for c in court_search]
+    return results
+
+
+
+
 
 if __name__ == '__main__':
     app.run()
 
 
 
-conn.close()
+# conn.close()
