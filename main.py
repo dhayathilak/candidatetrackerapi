@@ -2,7 +2,7 @@ from flask import Flask,request
 from flask_cors import CORS
 import psycopg2
 
-
+# flask app initilization
 app = Flask(__name__)
 host_name='127.0.0.1'
 portid=5432
