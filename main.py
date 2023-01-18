@@ -1,8 +1,6 @@
-from flask import Flask,request
-from flask_cors import CORS
 from models import Candidate,CourtSearch,Recruiter,db,app
 
-lst=[]
+
 
 @app.route('/recruiters')
 def get_recruiters():
@@ -29,21 +27,29 @@ def get_recruiter(id):
 @app.route('/candidates')
 def get_candidates():
     candidates = Candidate.query.all()
-    
+    lst=[]
     for candidate in candidates:
+        temp={}
+        temp["report"]=[]
         for document in candidate.document:
-            lst.append({"social_security":document.social_security})
-            lst.append({"drivers_licsense":document.drivers_licsense})
+            temp["social_security"] = document.social_security
+            temp["drivers_licsense"] = document.drivers_licsense
         for location in candidate.location:
-            lst.append({'zipcode':location.zipcode})
+            temp["zipcode"] = location.zipcode
+            temp["location"] = location.locationname
         for report in candidate.reportinformation:
-            lst.append({'status':report.status})
-            lst.append({'adjunction':report.adjunction})
-            lst.append({'package':report.package})
-            lst.append({'completed_date':report.completed_date})
-            lst.append({'turn_around_time':report.turn_around_time})
+            temp["report"].append({"status":report.status,"adjunction":report.adjunction,"package": report.package,"completed_date":report.completed_date,
+            "turn_around_time": report.turn_around_time})
         
-        lst.append({'candidate_name':candidate.name})
+        temp["id"]= candidate.id
+        temp["name"]= candidate.name
+        temp["adjunction"]= candidate.adjunction
+        temp["status"]=candidate.status
+        temp["date"]= candidate.date
+        temp["emailid"]=candidate.email_id
+           
+        
+        lst.append(temp)
 
     return lst
 
@@ -51,30 +57,55 @@ def get_candidates():
 @app.route('/candidates/<id>')
 def get_candidate(id):
     candidates = Candidate.query.filter_by(id=id)
-    
+    lst=[]
     for candidate in candidates:
+        temp={}
+        temp["report"]=[]
         for document in candidate.document:
-            lst.append({"social_security":document.social_security})
-            lst.append({"drivers_licsense":document.drivers_licsense})
+            temp["social_security"] = document.social_security
+            temp["drivers_licsense"] = document.drivers_licsense
         for location in candidate.location:
-            lst.append({'zipcode':location.zipcode})
+            temp["zipcode"] = location.zipcode
+            temp["location"] = location.locationname
         for report in candidate.reportinformation:
-            lst.append({'status':report.status})
-            lst.append({'adjunction':report.adjunction})
-            lst.append({'package':report.package})
-            lst.append({'completed_date':report.completed_date})
-            lst.append({'turn_around_time':report.turn_around_time})
+            temp["report"].append({"status":report.status,"adjunction":report.adjunction,"package": report.package,"completed_date":report.completed_date,
+            "turn_around_time": report.turn_around_time})
+         
+        temp["id"]= candidate.id
+        temp["name"]= candidate.name
+        temp["adjunction"]= candidate.adjunction
+        temp["status"]=candidate.status
+        temp["date"]= candidate.date
+        temp["emailid"]=candidate.email_id
+           
         
-        lst.append({'candidate_name':candidate.name})
+        lst.append(temp)
 
-    return lst
+        return lst
 
-@app.route('/courtsearch/<id>')
+    
+   
+       
+
+
+
+@app.route('/courtsearches/<id>')
 def get_courtsearch(id):
-    court_search = CourtSearch.query.filter_by(id=id)
+    court_search = CourtSearch.query.filter_by(search_id=id)
     results = [
             {
                 "id": c.id,
+                "name": c.name,
+                "status": c.status,
+                "date": c.date
+            } for c in court_search]
+    return results
+
+@app.route('/courtsearches')
+def get_courtsearches():
+    court_search = CourtSearch.query.all()
+    results = [
+            {
                 "name": c.name,
                 "status": c.status,
                 "date": c.date
