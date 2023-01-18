@@ -30,7 +30,7 @@ def get_candidates():
     lst=[]
     for candidate in candidates:
         temp={}
-        temp["report"]=[]
+        # temp["report"]={}
         for document in candidate.document:
             temp["social_security"] = document.social_security
             temp["drivers_licsense"] = document.drivers_licsense
@@ -38,16 +38,27 @@ def get_candidates():
             temp["zipcode"] = location.zipcode
             temp["location"] = location.locationname
         for report in candidate.reportinformation:
-            temp["report"].append({"status":report.status,"adjunction":report.adjunction,"package": report.package,"completed_date":report.completed_date,
-            "turn_around_time": report.turn_around_time})
-        
+            # temp["report"]["status"]=report.status
+            # temp["report"]["adjunction"]=report.adjunction
+            # temp["report"]["package"]=report.package
+            # temp["report"]["completed_date"]=report.completed_date
+            # temp["report"]["turn_around_time"]=report.turn_around_time
+            temp["status"]=report.status
+            temp["adjunction"]=report.adjunction
+            temp["package"]=report.package
+            temp["completed_date"]= report.completed_date
+            temp["turn_around_time"]= report.turn_around_time
+            
+        temp["dob"]=candidate.dob
+        temp["phone"]= candidate.phone 
         temp["id"]= candidate.id
         temp["name"]= candidate.name
         temp["adjunction"]= candidate.adjunction
         temp["status"]=candidate.status
         temp["date"]= candidate.date
         temp["emailid"]=candidate.email_id
-           
+
+            
         
         lst.append(temp)
 
@@ -60,7 +71,7 @@ def get_candidate(id):
     lst=[]
     for candidate in candidates:
         temp={}
-        temp["report"]=[]
+        # temp["report"]={}
         for document in candidate.document:
             temp["social_security"] = document.social_security
             temp["drivers_licsense"] = document.drivers_licsense
@@ -68,9 +79,15 @@ def get_candidate(id):
             temp["zipcode"] = location.zipcode
             temp["location"] = location.locationname
         for report in candidate.reportinformation:
-            temp["report"].append({"status":report.status,"adjunction":report.adjunction,"package": report.package,"completed_date":report.completed_date,
-            "turn_around_time": report.turn_around_time})
-         
+            temp["status"]=report.status
+            temp["adjunction"]=report.adjunction
+            temp["package"]=report.package
+            temp["completed_date"]= report.completed_date
+            temp["turn_around_time"]= report.turn_around_time
+           
+            
+        temp["dob"]=candidate.dob
+        temp["phone"]= candidate.phone 
         temp["id"]= candidate.id
         temp["name"]= candidate.name
         temp["adjunction"]= candidate.adjunction

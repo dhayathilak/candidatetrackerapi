@@ -61,6 +61,8 @@ class CourtSearch(db.Model):
 class Candidate(db.Model):
     id= db.Column(db.Integer,primary_key=True)
     name=db.Column(db.VARCHAR)
+    dob= db.Column(db.VARCHAR)
+    phone= db.Column(db.VARCHAR)
     adjunction = db.Column(db.VARCHAR)
     status = db.Column(db.VARCHAR)
     date = db.Column(db.VARCHAR)
