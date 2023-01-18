@@ -1,61 +1,141 @@
-from flask import Flask,request
-from flask_cors import CORS
-import psycopg2
-
-# flask app initilization
-app = Flask(__name__)
-host_name='127.0.0.1'
-portid=5432
-database= 'Candidatetracker'
-username='postgres'
-pwd=1234
-
-# setting up a connection cursor
-conn  = psycopg2.connect(host=host_name,dbname=database,user=username,password=pwd)
-try:
-    cur = conn.cursor()
-
-except Exception as error:
-    print(error)
+from models import Candidate,CourtSearch,Recruiter,db,app
 
 
-@app.route('/recruiters',methods=['GET'])
+
+@app.route('/recruiters')
 def get_recruiters():
-    cur.execute("SELECT * FROM RECRUITERS")
-    records = cur.fetchall()
-    return records
+    recruiters_info = Recruiter.query.all()
+    results = [
+            {
+                "id": recruiter.id,
+                "name": recruiter.name,
+                "email_id": recruiter.email_id
+            } for recruiter in recruiters_info]
+    return results
 
+@app.route('/recruiters/<id>')
+def get_recruiter(id):
+    recruiters_info = Recruiter.query.filter_by(id=id)
+    results = [
+            {
+                "id": recruiter.id,
+                "name": recruiter.name,
+                "email_id": recruiter.email_id
+            } for recruiter in recruiters_info]
+    return results
 
-@app.route('/recruiters/<id>',methods=['GET'])
-def get_recruiter():
-    cur.execute("SELECT * FROM RECRUITERS RECRUITER WHERE RECRUITER.ID='%s"%(id))
-    records = cur.fetchall()
-    return records
-
-
-@app.route('/candidates',methods=['GET'])    
+@app.route('/candidates')
 def get_candidates():
-    cur.execute("select c.id,c.name,c.adjunction,c.date,c.email_id,l.zipcode,d.drivers_licsense,d.social_security,r.* from candidates c inner join locations l on c.id= l.id inner join documents d on c.documentid= d.id inner join report_information r on c.id = r.id")
-    records = cur.fetchall()
-    return records
+    candidates = Candidate.query.all()
+    lst=[]
+    for candidate in candidates:
+        temp={}
+        # temp["report"]={}
+        for document in candidate.document:
+            temp["social_security"] = document.social_security
+            temp["drivers_licsense"] = document.drivers_licsense
+        for location in candidate.location:
+            temp["zipcode"] = location.zipcode
+            temp["location"] = location.locationname
+        for report in candidate.reportinformation:
+            # temp["report"]["status"]=report.status
+            # temp["report"]["adjunction"]=report.adjunction
+            # temp["report"]["package"]=report.package
+            # temp["report"]["completed_date"]=report.completed_date
+            # temp["report"]["turn_around_time"]=report.turn_around_time
+            temp["status"]=report.status
+            temp["adjunction"]=report.adjunction
+            temp["package"]=report.package
+            temp["completed_date"]= report.completed_date
+            temp["turn_around_time"]= report.turn_around_time
+            
+        temp["dob"]=candidate.dob
+        temp["phone"]= candidate.phone 
+        temp["id"]= candidate.id
+        temp["name"]= candidate.name
+        temp["adjunction"]= candidate.adjunction
+        temp["status"]=candidate.status
+        temp["date"]= candidate.date
+        temp["emailid"]=candidate.email_id
 
-@app.route('/candidates/<id>',methods=['GET'])    
+            
+        
+        lst.append(temp)
+
+    return lst
+
+
+@app.route('/candidates/<id>')
 def get_candidate(id):
-    cur.execute("select c.id,c.name,c.adjunction,c.date,c.email_id,l.zipcode,d.drivers_licsense,d.social_security,r.* from candidates c inner join locations l on c.id= l.id inner join documents d on c.documentid= d.id inner join report_information r on c.id = r.id where c.id='%s'"%(id))
-    records = cur.fetchall()
-    return records
+    candidates = Candidate.query.filter_by(id=id)
+    lst=[]
+    for candidate in candidates:
+        temp={}
+        # temp["report"]={}
+        for document in candidate.document:
+            temp["social_security"] = document.social_security
+            temp["drivers_licsense"] = document.drivers_licsense
+        for location in candidate.location:
+            temp["zipcode"] = location.zipcode
+            temp["location"] = location.locationname
+        for report in candidate.reportinformation:
+            temp["status"]=report.status
+            temp["adjunction"]=report.adjunction
+            temp["package"]=report.package
+            temp["completed_date"]= report.completed_date
+            temp["turn_around_time"]= report.turn_around_time
+           
+            
+        temp["dob"]=candidate.dob
+        temp["phone"]= candidate.phone 
+        temp["id"]= candidate.id
+        temp["name"]= candidate.name
+        temp["adjunction"]= candidate.adjunction
+        temp["status"]=candidate.status
+        temp["date"]= candidate.date
+        temp["emailid"]=candidate.email_id
+           
+        
+        lst.append(temp)
 
-@app.route('/candidates/<id>',methods=['PUT','GET'])
-def update_adverse_action(id):
-    adverse_action = request.form.get('adverse_action')
-    print(adverse_action)
-    cur.execute("update candidates set adjunction =CASE adjunction  when 'pre-adverse' then 'adverse' when 'engage' then 'engage' else '-' end  where candidates.id='%s'"%(id))
-    records = cur.fetchall()
-    return records
+        return lst
+
+    
+   
+       
+
+
+
+@app.route('/courtsearches/<id>')
+def get_courtsearch(id):
+    court_search = CourtSearch.query.filter_by(search_id=id)
+    results = [
+            {
+                "id": c.id,
+                "name": c.name,
+                "status": c.status,
+                "date": c.date
+            } for c in court_search]
+    return results
+
+@app.route('/courtsearches')
+def get_courtsearches():
+    court_search = CourtSearch.query.all()
+    results = [
+            {
+                "name": c.name,
+                "status": c.status,
+                "date": c.date
+            } for c in court_search]
+    return results
+
+
+
+
 
 if __name__ == '__main__':
     app.run()
 
 
 
-conn.close()
+# conn.close()
